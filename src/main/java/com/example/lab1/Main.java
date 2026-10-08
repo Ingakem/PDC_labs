@@ -22,10 +22,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-
-        Label label = new Label(
-                "Вариант 3. Суммы нечётных чисел по два"
-        );
+        Label label = new Label("Вариант 3. Суммы нечётных чисел по два");
 
         startButton = new Button("Запустить");
 
@@ -44,7 +41,6 @@ public class Main extends Application {
         root.setPadding(new Insets(10));
         root.getChildren().addAll(label, startButton, resultArea);
 
-        // Поле результатов занимает свободное место в окне
         VBox.setVgrow(resultArea, Priority.ALWAYS);
 
         Scene scene = new Scene(root, 750, 550);
@@ -68,66 +64,40 @@ public class Main extends Application {
 
         resultArea.appendText("\n\n");
 
-        // Два потока первого студента
-        Thread th1 = new Thread(
-                new Student1(mas, 0, 1),
-                "Студент 1, Th1"
-        );
+        Thread th1 = new Thread(new Student1(mas, 0, 1), "Иван, Th1");
+        Thread th2 = new Thread(new Student1(mas, mas.length - 1, -1), "Иван, Th2");
 
-        Thread th2 = new Thread(
-                new Student1(mas, mas.length - 1, -1),
-                "Студент 1, Th2"
-        );
-
-//        // Два потока второго студента
-//        Thread th3 = new Thread(
-//                new Student2(mas, true),
-//                "Студент 2, Th1"
-//        );
-//
-//        Thread th4 = new Thread(
-//                new Student2(mas, false),
-//                "Студент 2, Th2"
-//        );
+        Thread th3 = new Thread(new Student2(mas, true), "Дима, Th1");
+        Thread th4 = new Thread(new Student2(mas, false), "Дима, Th2");
 
         th1.start();
         th2.start();
-//        th3.start();
-//        th4.start();
+        th3.start();
+        th4.start();
 
-        // Ждём в отдельном потоке, чтобы окно не зависало
         Thread waitThread = new Thread(new Runnable() {
             @Override
             public void run() {
-
                 try {
                     th1.join();
                     th2.join();
-//                    th3.join();
-//                    th4.join();
+                    th3.join();
+                    th4.join();
 
                     printText("\nВсе потоки завершили работу.\n");
                     printText("\nИнформация о студентах:\n");
 
-                    // Здесь впиши ваши имена и группу
-                    String info =
-                            "Студент 1: Имя Фамилия, группа ...\n"
-                                    + "Студент 2: Имя Фамилия, группа ...";
+                    String info = "Borisenco Ivan, CR-243\n" + "Ciolac Dumitru, CR-243";
 
-                    // Выводим текст по одному символу
                     for (int i = 0; i < info.length(); i++) {
                         printText(String.valueOf(info.charAt(i)));
                         Thread.sleep(100);
                     }
-
                     printText("\n");
-
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     printText("\nОжидание было прервано.\n");
-
                 } finally {
-                    // Снова разрешаем запуск
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
@@ -137,15 +107,11 @@ public class Main extends Application {
                 }
             }
         });
-
-        // Этот поток не удерживает программу после закрытия окна
         waitThread.setDaemon(true);
         waitThread.start();
     }
 
-    // Добавляем текст в окно из рабочих потоков
     public static void printText(String text) {
-
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
