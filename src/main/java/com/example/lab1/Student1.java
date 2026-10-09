@@ -24,9 +24,7 @@ public class Student1 implements Runnable {
                 } else {
                     int sum = first + mas[i];
 
-                    Main.printText(
-                            Thread.currentThread().getName() + ": " + first + " + " + mas[i] + " = " + sum + "\n"
-                    );
+                    Main.printText(Thread.currentThread().getName() + ": " + first + " + " + mas[i] + " = " + sum + "\n");
 
                     first = -1;
                 }
