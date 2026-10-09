@@ -65,9 +65,9 @@ public class Main extends Application {
         resultArea.appendText("\n\n");
 
         Thread th1 = new Thread(new Student1(mas, 0, 1), "Иван, Th1");
-        Thread th2 = new Thread(new Student1(mas, mas.length - 1, -1), "Иван, Th2");
+        Thread th2 = new Thread(new Student1(mas, 0, 1), "Иван, Th2");
 
-        Thread th3 = new Thread(new Student2(mas, true), "Дима, Th1");
+        Thread th3 = new Thread(new Student2(mas, false), "Дима, Th1");
         Thread th4 = new Thread(new Student2(mas, false), "Дима, Th2");
 
         th1.start();
