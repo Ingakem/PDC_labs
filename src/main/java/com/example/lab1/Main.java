@@ -95,7 +95,9 @@ public class Main extends Application {
                     }
                     printText("\n");
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     printText("\nОжидание было прервано.\n");
+                    return;
                 } finally {
                     Platform.runLater(new Runnable() {
                         @Override
