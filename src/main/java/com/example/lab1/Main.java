@@ -2,6 +2,8 @@ package com.example.lab1;
 
 import java.util.Random;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -14,15 +16,23 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class Main extends Application {
 
     private static TextArea resultArea;
     private Button startButton;
 
+    private Thread coordinator;
+    private Timeline infoTimer;
+    private int symbolIndex;
+
     @Override
     public void start(Stage stage) {
-        Label label = new Label("Вариант 3. Суммы нечётных чисел по два");
+
+        Label label = new Label(
+                "Суммы двух пар нечётных чисел: ((a + b) + (c + d))"
+        );
 
         startButton = new Button("Запустить");
 
@@ -51,9 +61,12 @@ public class Main extends Application {
     }
 
     private void startWork() {
+
+        // Отключаем кнопку на время работы
         startButton.setDisable(true);
         resultArea.setText("Массив:\n");
 
+        // Создаём общий массив
         int[] mas = new int[100];
         Random random = new Random();
 
@@ -64,61 +77,103 @@ public class Main extends Application {
 
         resultArea.appendText("\n\n");
 
-        Thread th1 = new Thread(new Student1(mas, 0, 1), "Иван, Th1");
-        Thread th2 = new Thread(new Student1(mas, 0, 1), "Иван, Th2");
+        // Оба потока Ивана идут с начала массива
+        Thread th1 = new Thread(new Student1(mas), "Иван, Th1");
+        Thread th2 = new Thread(new Student1(mas), "Иван, Th2");
 
-        Thread th3 = new Thread(new Student2(mas, false), "Дима, Th1");
-        Thread th4 = new Thread(new Student2(mas, false), "Дима, Th2");
+        // Оба потока Димы идут с конца массива
+        Thread th3 = new Thread(new Student2(mas), "Дима, Th1");
+        Thread th4 = new Thread(new Student2(mas), "Дима, Th2");
 
+        // Запускаем все четыре рабочих потока
         th1.start();
         th2.start();
         th3.start();
         th4.start();
 
-        Thread waitThread = new Thread(new Runnable() {
+        // Координатор ждёт, не блокируя интерфейс
+        coordinator = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     th1.join();
                     th2.join();
                     th3.join();
                     th4.join();
 
-                    printText("\nВсе потоки завершили работу.\n");
-                    printText("\nИнформация о студентах:\n");
-
-                    String info = "Borisenco Ivan, CR-243\n" + "Ciolac Dumitru, CR-243";
-
-                    for (int i = 0; i < info.length(); i++) {
-                        printText(String.valueOf(info.charAt(i)));
-                        Thread.sleep(100);
-                    }
-                    printText("\n");
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
                     printText("\nОжидание было прервано.\n");
+                    System.err.println("Координатор был прерван во время ожидания рабочих потоков.");
+                    //Тип исключения + цепочку вызовов методов
+                    e.printStackTrace();
                     return;
-                } finally {
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            startButton.setDisable(false);
-                        }
-                    });
                 }
+
+                // Передаём вывод данных студентов интерфейсу
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showStudentsInfo();
+                    }
+                });
             }
-        });
-        waitThread.setDaemon(true);
-        waitThread.start();
+        }, "Coordinator");
+        coordinator.start();
     }
 
+    private void showStudentsInfo() {
+
+        resultArea.appendText("\nВсе четыре потока завершили работу.\n" + "\nИнформация о студентах:\n");
+
+        String info = "Borisenco Ivan, CR-243\n" + "Ciolac Dumitru, CR-243";
+
+        symbolIndex = 0;
+
+        infoTimer = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent event) {
+                                resultArea.appendText(String.valueOf(info.charAt(symbolIndex)));
+                                symbolIndex++;
+                            }
+                        }
+                )
+        );
+
+        infoTimer.setCycleCount(info.length());
+
+        infoTimer.setOnFinished(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                resultArea.appendText("\n");
+                startButton.setDisable(false);
+            }
+        });
+        infoTimer.play();
+    }
+
+    // Рабочие потоки передают сюда текст для вывода
     public static void printText(String text) {
+
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 resultArea.appendText(text);
             }
         });
+    }
+
+    @Override
+    public void stop() {
+        // При закрытии окна останавливаем таймер
+        if (infoTimer != null) {
+            infoTimer.stop();
+        }
+
+        // Прерываем ожидание координатора
+        if (coordinator != null) {
+            coordinator.interrupt();
+        }
     }
 
     public static void main(String[] args) {

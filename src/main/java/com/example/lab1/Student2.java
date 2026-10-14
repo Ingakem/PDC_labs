@@ -1,46 +1,30 @@
 package com.example.lab1;
 
 public class Student2 implements Runnable {
-
     private int[] mas;
-    private boolean fromStart;
-
-    public Student2(int[] mas, boolean fromStart) {
+    public Student2(int[] mas) {
         this.mas = mas;
-        this.fromStart = fromStart;
     }
-
     @Override
     public void run() {
-        int first = -1;
-        if (fromStart) {
-            for (int i = 0; i < mas.length; i++) {
-                if (mas[i] % 2 != 0) {
-                    if (first == -1) {
-                        first = mas[i];
-                    } else {
-                        int sum = first + mas[i];
-                        Main.printText(
-                                Thread.currentThread().getName() + ": " + first + " + " + mas[i] + " = " + sum + "\n"
-                        );
-                        first = -1;
-                    }
-                }
-            }
-        } else {
-            for (int i = mas.length - 1; i >= 0; i--) {
-                if (mas[i] % 2 != 0) {
-                    if (first == -1) {
-                        first = mas[i];
-                    } else {
-                        int sum = first + mas[i];
+        int[] numbers = new int[4];
+        int count = 0;
+        for (int i = mas.length - 1; i >= 0; i--) {
+            if (mas[i] % 2 != 0) {
+                numbers[count] = mas[i];
+                count++;
+                if (count == 4) {
 
-                        Main.printText(
-                                Thread.currentThread().getName() + ": " + first + " + " + mas[i] + " = " + sum + "\n"
-                        );
+                    int sum1 = numbers[0] + numbers[1];
+                    int sum2 = numbers[2] + numbers[3];
+                    int sum = sum1 + sum2;
 
-                        first = -1;
-                    }
+                    Main.printText(Thread.currentThread().getName()
+                                    + ": ((" + numbers[0] + " + " + numbers[1]
+                                    + ") + (" + numbers[2] + " + " + numbers[3]
+                                    + ")) = " + sum + "\n"
+                    );
+                    count = 0;
                 }
             }
         }
