@@ -30,9 +30,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
 
-        Label label = new Label(
-                "Суммы двух пар нечётных чисел: ((a + b) + (c + d))"
-        );
+        Label label = new Label("Суммы нечетных чисел по два");
 
         startButton = new Button("Запустить");
 
@@ -62,11 +60,9 @@ public class Main extends Application {
 
     private void startWork() {
 
-        // Отключаем кнопку на время работы
         startButton.setDisable(true);
         resultArea.setText("Массив:\n");
 
-        // Создаём общий массив
         int[] mas = new int[100];
         Random random = new Random();
 
@@ -77,15 +73,12 @@ public class Main extends Application {
 
         resultArea.appendText("\n\n");
 
-        // Оба потока Ивана идут с начала массива
         Thread th1 = new Thread(new Student1(mas), "Иван, Th1");
         Thread th2 = new Thread(new Student1(mas), "Иван, Th2");
 
-        // Оба потока Димы идут с конца массива
         Thread th3 = new Thread(new Student2(mas), "Дима, Th1");
         Thread th4 = new Thread(new Student2(mas), "Дима, Th2");
 
-        // Запускаем все четыре рабочих потока
         th1.start();
         th2.start();
         th3.start();
@@ -95,7 +88,6 @@ public class Main extends Application {
         coordinator = new Thread(new Runnable() {
             @Override
             public void run() {
-
                 try {
                     th1.join();
                     th2.join();
@@ -107,10 +99,8 @@ public class Main extends Application {
                     System.err.println("Координатор был прерван во время ожидания рабочих потоков.");
                     //Тип исключения + цепочку вызовов методов
                     e.printStackTrace();
-                    return;
                 }
 
-                // Передаём вывод данных студентов интерфейсу
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -131,14 +121,13 @@ public class Main extends Application {
         symbolIndex = 0;
 
         infoTimer = new Timeline(new KeyFrame(Duration.millis(100), new EventHandler<ActionEvent>() {
-                            @Override
-                            public void handle(ActionEvent event) {
-                                resultArea.appendText(String.valueOf(info.charAt(symbolIndex)));
-                                symbolIndex++;
-                            }
-                        }
-                )
-        );
+            @Override
+            public void handle(ActionEvent event) {
+                resultArea.appendText(String.valueOf(info.charAt(symbolIndex)));
+                symbolIndex++;
+                }
+            }
+        ));
 
         infoTimer.setCycleCount(info.length());
 
@@ -152,7 +141,6 @@ public class Main extends Application {
         infoTimer.play();
     }
 
-    // Рабочие потоки передают сюда текст для вывода
     public static void printText(String text) {
 
         Platform.runLater(new Runnable() {
@@ -165,12 +153,9 @@ public class Main extends Application {
 
     @Override
     public void stop() {
-        // При закрытии окна останавливаем таймер
         if (infoTimer != null) {
             infoTimer.stop();
         }
-
-        // Прерываем ожидание координатора
         if (coordinator != null) {
             coordinator.interrupt();
         }

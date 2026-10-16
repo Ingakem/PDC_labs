@@ -20,9 +20,9 @@ public class Student2 implements Runnable {
                     int sum = sum1 + sum2;
 
                     Main.printText(Thread.currentThread().getName()
-                                    + ": ((" + numbers[0] + " + " + numbers[1]
-                                    + ") + (" + numbers[2] + " + " + numbers[3]
-                                    + ")) = " + sum + "\n"
+                            + ": ((" + numbers[0] + " + " + numbers[1]
+                            + ") + (" + numbers[2] + " + " + numbers[3]
+                            + ")) = " + sum + "\n"
                     );
                     count = 0;
                 }
