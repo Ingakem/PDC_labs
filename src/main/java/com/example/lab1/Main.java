@@ -79,6 +79,7 @@ public class Main extends Application {
         }
     }
 
+    //Main{ GN{ GH{Tha(4), Thb(3), Thc(6), Thd(3)}, ThA(3) },GM{Th1(2), Th2(3), Th3(3)},Th1(8), Th2(3)}
     private Thread[] createThreads(boolean advanced) {
         // Создаём группы и их вложенность.
         ThreadGroup mainGroup = new ThreadGroup("Main");
@@ -86,21 +87,20 @@ public class Main extends Application {
         ThreadGroup gh = new ThreadGroup(gn, "GH");
         ThreadGroup gm = new ThreadGroup(mainGroup, "GM");
 
-        // Каждый вызов создаёт один поток из варианта 3.
         return new Thread[] {
-                createThread(gh, "Tha", 4, advanced),
-                createThread(gh, "Thb", 3, advanced),
-                createThread(gh, "Thc", 6, advanced),
-                createThread(gh, "Thd", 3, advanced),
+                createThread(gh, "Tha", Thread.MAX_PRIORITY - 6, advanced), // 4
+                createThread(gh, "Thb", Thread.MAX_PRIORITY - 7, advanced), // 3
+                createThread(gh, "Thc", Thread.MAX_PRIORITY - 4, advanced), // 6
+                createThread(gh, "Thd", Thread.MAX_PRIORITY - 7, advanced), // 3
 
-                createThread(gn, "ThA", 3, advanced),
+                createThread(gn, "ThA", Thread.MAX_PRIORITY - 7, advanced), // 3
 
-                createThread(gm, "Th1", 2, advanced),
-                createThread(gm, "Th2", 3, advanced),
-                createThread(gm, "Th3", 3, advanced),
+                createThread(gm, "Th1", Thread.MAX_PRIORITY - 8, advanced), // 2
+                createThread(gm, "Th2", Thread.MAX_PRIORITY - 7, advanced), // 3
+                createThread(gm, "Th3", Thread.MAX_PRIORITY - 7, advanced), // 3
 
-                createThread(mainGroup, "Th1", 8, advanced),
-                createThread(mainGroup, "Th2", 3, advanced)
+                createThread(mainGroup, "Th1", Thread.MAX_PRIORITY - 2, advanced), // 8
+                createThread(mainGroup, "Th2", Thread.MAX_PRIORITY - 7, advanced)  // 3
         };
     }
 
