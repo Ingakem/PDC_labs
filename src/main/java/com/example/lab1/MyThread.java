@@ -2,11 +2,8 @@ package com.example.lab1;
 
 public class MyThread extends Thread {
 
-    Main app;
-
-    public MyThread(ThreadGroup group, String name, Main app) {
+    public MyThread(ThreadGroup group, String name) {
         super(group, name);
-        this.app = app;
     }
 
     @Override
@@ -19,6 +16,6 @@ public class MyThread extends Thread {
         System.out.println(text);
 
         // Дополнительно показываем тот же текст в окне JavaFX.
-        app.printResult(text);
+        Main.printResult(text);
     }
 }
