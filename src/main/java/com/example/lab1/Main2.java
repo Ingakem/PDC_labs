@@ -15,23 +15,23 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
 
 class CustomFXThread extends Thread {
     private final TextArea logArea;
-    private final CountDownLatch latch;
+    private final Phaser phaser;
 
-    public CustomFXThread(ThreadGroup group, String name, int priority, TextArea logArea, CountDownLatch latch) {
+    public CustomFXThread(ThreadGroup group, String name, int priority, TextArea logArea, Phaser phaser) {
         super(group, name);
         setPriority(priority);
         this.logArea = logArea;
-        this.latch = latch;
+        this.phaser = phaser;
     }
 
     @Override
     public void run() {
         String groupName = (getThreadGroup() != null) ? getThreadGroup().getName() : "N/A";
-        String msg = String.format("[run()] Поток: %-5s | Группа: %-5s | Приоритет: %d%n",
+        String msg = String.format("Поток: %-5s | Группа: %-5s | Приоритет: %d%n",
                 getName(), groupName, getPriority());
 
         System.out.print(msg);
@@ -39,11 +39,7 @@ class CustomFXThread extends Thread {
             Platform.runLater(() -> logArea.appendText(msg));
         }
 
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        phaser.awaitAdvance(0);
     }
 }
 
@@ -123,7 +119,6 @@ public class Main2 extends Application {
         stage.show();
     }
 
-    @SuppressWarnings("unchecked")
     private void setupTableColumns() {
         TableColumn<ThreadInfo, Number> colIndex = new TableColumn<>("№");
         colIndex.setCellValueFactory(data -> data.getValue().index);
@@ -160,15 +155,9 @@ public class Main2 extends Application {
         ThreadGroup groupGV = new ThreadGroup(mainGroup, "GV");
         ThreadGroup groupGF = new ThreadGroup(mainGroup, "GF");
 
-        CountDownLatch latch = new CountDownLatch(1);
+        Phaser phaser = new Phaser(1);
 
-        Runnable waitTask = () -> {
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        };
+        Runnable waitTask = () -> phaser.awaitAdvance(0);
 
         Thread[] threads = {
                 createStandardThread(groupGZ, waitTask, "Tha", 1),
@@ -189,7 +178,7 @@ public class Main2 extends Application {
 
         populateUIAndConsole(mainGroup);
 
-        latch.countDown();
+        phaser.arrive();
     }
 
      //ЗАДАЧА 2: Продвинутый уровень (с переопределением метода run()).
@@ -204,19 +193,19 @@ public class Main2 extends Application {
         ThreadGroup groupGV = new ThreadGroup(mainGroup, "GV");
         ThreadGroup groupGF = new ThreadGroup(mainGroup, "GF");
 
-        CountDownLatch latch = new CountDownLatch(1);
+        Phaser phaser = new Phaser(1);
 
         CustomFXThread[] threads = {
-                new CustomFXThread(groupGZ, "Tha", 1, logArea, latch),
-                new CustomFXThread(groupGZ, "Thb", 3, logArea, latch),
-                new CustomFXThread(groupGZ, "Thc", 3, logArea, latch),
-                new CustomFXThread(groupGZ, "Thd", 7, logArea, latch),
-                new CustomFXThread(groupGV, "ThA", 3, logArea, latch),
-                new CustomFXThread(groupGF, "Th1", 5, logArea, latch),
-                new CustomFXThread(groupGF, "Th2", 3, logArea, latch),
-                new CustomFXThread(groupGF, "Th3", 9, logArea, latch),
-                new CustomFXThread(mainGroup, "Th1", 3, logArea, latch),
-                new CustomFXThread(mainGroup, "Th2", Thread.NORM_PRIORITY, logArea, latch)
+                new CustomFXThread(groupGZ, "Tha", 1, logArea, phaser),
+                new CustomFXThread(groupGZ, "Thb", 3, logArea, phaser),
+                new CustomFXThread(groupGZ, "Thc", 3, logArea, phaser),
+                new CustomFXThread(groupGZ, "Thd", 7, logArea, phaser),
+                new CustomFXThread(groupGV, "ThA", 3, logArea, phaser),
+                new CustomFXThread(groupGF, "Th1", 5, logArea, phaser),
+                new CustomFXThread(groupGF, "Th2", 3, logArea, phaser),
+                new CustomFXThread(groupGF, "Th3", 9, logArea, phaser),
+                new CustomFXThread(mainGroup, "Th1", 3, logArea, phaser),
+                new CustomFXThread(mainGroup, "Th2", Thread.NORM_PRIORITY, logArea, phaser)
         };
 
         for (CustomFXThread t : threads) {
@@ -225,7 +214,7 @@ public class Main2 extends Application {
 
         populateUIAndConsole(mainGroup);
 
-        latch.countDown();
+        phaser.arrive();
     }
 
     private Thread createStandardThread(ThreadGroup group, Runnable target, String name, int priority) {
@@ -247,7 +236,7 @@ public class Main2 extends Application {
             String gName = (t.getThreadGroup() != null) ? t.getThreadGroup().getName() : "N/A";
             tableData.add(new ThreadInfo(i + 1, t.getName(), gName, t.getPriority(), t.getState().toString()));
 
-            String line = String.format("Thread #%d = %-5s | Группа: %-5s | Приоритет: %d%n",
+            String line = String.format("Поток #%d = %-5s | Группа: %-5s | Приоритет: %d%n",
                     i + 1, t.getName(), gName, t.getPriority());
             System.out.print(line);
             logArea.appendText(line);
