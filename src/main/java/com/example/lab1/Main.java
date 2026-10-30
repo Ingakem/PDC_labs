@@ -13,14 +13,14 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    private TextArea output;
-    private Button mediumButton;
-    private Button advancedButton;
-    private int messagesReceived;
+    private static TextArea output;
+    private static Button mediumButton;
+    private static Button advancedButton;
+    private static int messagesReceived;
 
     @Override
     public void start(Stage stage) {
-        Label title = new Label("Лабораторная работа №2. Вариант 3");
+        Label title = new Label("Вариант 3");
 
         mediumButton = new Button("Средний уровень");
         advancedButton = new Button("Продвинутый уровень");
@@ -106,7 +106,7 @@ public class Main extends Application {
 
     private Thread createThread(ThreadGroup group, String name, int priority, boolean advanced) {
         if (advanced) {
-            Thread thread = new MyThread(group, name, this);
+            Thread thread = new MyThread(group, name);
             thread.setPriority(priority);
             return thread;
         } else {
@@ -117,7 +117,7 @@ public class Main extends Application {
     }
 
     // Этот метод вызывают потоки продвинутого уровня.
-    public void printResult(String text) {
+    public static void printResult(String text) {
         Platform.runLater(() -> {
             output.appendText(text + "\n");
             messagesReceived++;
