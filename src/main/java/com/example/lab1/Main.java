@@ -56,7 +56,6 @@ public class Main extends Application {
 
         output.appendText("Перечень всех 10 потоков до запуска:\n");
 
-        // Читаем данные до запуска, пока потоки ещё не завершились.
         for (int i = 0; i < threads.length; i++) {
             String text = "Поток: " + threads[i].getName()
                     + " | Группа: " + threads[i].getThreadGroup().getName()
@@ -73,7 +72,6 @@ public class Main extends Application {
             output.appendText("\nМетод run() класса Thread не переопределён.\n");
         }
 
-        // Запускаем все потоки выбранного уровня.
         for (int i = 0; i < threads.length; i++) {
             threads[i].start();
         }
@@ -81,7 +79,6 @@ public class Main extends Application {
 
     //Main{ GN{ GH{Tha(4), Thb(3), Thc(6), Thd(3)}, ThA(3) },GM{Th1(2), Th2(3), Th3(3)},Th1(8), Th2(3)}
     private Thread[] createThreads(boolean advanced) {
-        // Создаём группы и их вложенность.
         ThreadGroup mainGroup = new ThreadGroup("Main");
         ThreadGroup gn = new ThreadGroup(mainGroup, "GN");
         ThreadGroup gh = new ThreadGroup(gn, "GH");
@@ -116,7 +113,6 @@ public class Main extends Application {
         }
     }
 
-    // Этот метод вызывают потоки продвинутого уровня.
     public static void printResult(String text) {
         Platform.runLater(() -> {
             output.appendText(text + "\n");

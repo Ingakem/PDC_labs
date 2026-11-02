@@ -12,10 +12,8 @@ public class MyThread extends Thread {
                 + " | Группа: " + getThreadGroup().getName()
                 + " | Приоритет: " + getPriority();
 
-        // Обязательный вывод в консоль по условию задания.
         System.out.println(text);
 
-        // Дополнительно показываем тот же текст в окне JavaFX.
         Main.printResult(text);
     }
 }
