@@ -27,13 +27,13 @@ class CustomFX2Thread extends Thread {
                 getName(), getThreadGroup().getName(), getPriority());
 
         System.out.print(msg);
-        Main2Test.printLog(msg);
+        Main2.printLog(msg);
 
         phaser.awaitAdvance(0);
     }
 }
 
-public class Main2Test extends Application {
+public class Main2 extends Application {
     private static TextArea logArea;
 
     public static void printLog(String text) {
