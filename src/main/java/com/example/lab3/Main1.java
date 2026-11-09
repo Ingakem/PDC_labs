@@ -103,7 +103,7 @@ public class Main1 extends Application {
         @Override
         public void run() {
             sumOddPairs(getName(), 0, 1);
-            finishAndPrint(this, th4, "Th1 (Фамилия): Borisenco");
+            finishAndPrint(this, th4, "Th1 (Фамилия): Борисенко");
         }
     }
 
@@ -115,7 +115,7 @@ public class Main1 extends Application {
         @Override
         public void run() {
             sumOddPairs(getName(), mas.length - 1, -1);
-            finishAndPrint(this, null, "Th2 (Имя): Ivan");
+            finishAndPrint(this, null, "Th2 (Имя): Иван");
         }
     }
 
@@ -221,7 +221,6 @@ public class Main1 extends Application {
 
         if (!current.isInterrupted()) {
             printText("\n");
-            current.setPriority(9);
         }
     }
 
