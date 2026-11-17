@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class lab4 extends Application {
-    public static final int X = 4, Y = 5, Z = 3, D = 12;
+    public static final int X = 2, Y = 5, Z = 3, D = 12;
 
     private TextArea logArea;
     private ProgressBar capacityBar;
