@@ -31,6 +31,10 @@ public class Main extends Application {
     Thread[] consumers = new Thread[Y];
     Thread coordinator;
 
+    enum StoreResult {
+        SUCCESS, RETRY, STOP
+    }
+
     @Override
     public void start(Stage stage) {
         Label label = new Label("4 производителя, 3 потребителя, склад на 10 букв");
@@ -54,7 +58,6 @@ public class Main extends Application {
     void startWork() {
         resultArea.clear();
         startButton.setDisable(true);
-
         store = new Store();
 
         printText("Склад пуст. Начало работы.\n\n");
@@ -86,12 +89,11 @@ public class Main extends Application {
                 }
 
                 printText("\nВсе потоки завершили работу.\n"
-                            + "Каждый потребитель получил " + Z + " буквы.\n"
-                            + "Всего получено: " + (Y * Z) + " букв.\n"
-                            + "Осталось на складе: "
-                            + store.size() + " букв.\n");
-                Platform.runLater(() -> startButton.setDisable(false));
+                        + "Каждый потребитель получил " + Z + " буквы.\n"
+                        + "Всего получено: " + store.consumedCount + " букв.\n"
+                        + "Осталось на складе: " + store.size() + " букв.\n");
 
+                Platform.runLater(() -> startButton.setDisable(false));
             } catch (InterruptedException e) {
                 printText("\nКоординатор был прерван.\n");
                 e.printStackTrace();
@@ -107,57 +109,56 @@ public class Main extends Application {
 
     class Store {
         ArrayList<Character> stock = new ArrayList<>();
-
         int consumedCount = 0;
 
-        synchronized boolean put(String name, char first, char second) {
-            while (consumedCount < Y * Z && stock.size() + F > D) {
+        synchronized StoreResult put(String name, char first, char second) {
+            if (consumedCount >= Y * Z) {
+                return StoreResult.STOP;
+            } else if (stock.size() + F > D) {
                 printText(name + ": недостаточно места для двух букв. Жду.\n");
                 try {
                     wait();
                 } catch (InterruptedException e) {
                     printText("\nОжидание было прервано.\n");
                     e.printStackTrace();
-                    return false;
+                    return StoreResult.STOP;
                 }
+                return StoreResult.RETRY;
+            } else {
+                stock.add(first);
+                stock.add(second);
+
+                printText(name + " добавил: " + first + ", " + second + "\n");
+                showStock();
+
+                notifyAll();
+                return StoreResult.SUCCESS;
             }
-
-            if (consumedCount == Y * Z) {
-                return false;
-            }
-
-            stock.add(first);
-            stock.add(second);
-
-            printText(name + " добавил: " + first + ", " + second + "\n");
-
-            showStock();
-
-            notifyAll();
-            return true;
         }
 
-        synchronized boolean get(String name, int number) {
-            while (stock.isEmpty()) {
+        synchronized StoreResult get(String name, int number) {
+            if (consumedCount >= Y * Z) {
+                return StoreResult.STOP;
+            } else if (stock.isEmpty()) {
                 printText(name + ": склад пуст. Жду.\n");
                 try {
                     wait();
                 } catch (InterruptedException e) {
                     printText("\nОжидание было прервано.\n");
                     e.printStackTrace();
-                    return false;
+                    return StoreResult.STOP;
                 }
+                return StoreResult.RETRY;
+            } else {
+                char letter = stock.remove(0);
+                consumedCount++;
+
+                printText(name + " взял: " + letter + " (" + number + " из " + Z + ")\n");
+                showStock();
+
+                notifyAll();
+                return StoreResult.SUCCESS;
             }
-
-            char letter = stock.remove(0);
-            consumedCount++;
-
-            printText(name + " взял: " + letter + " (" + number + " из " + Z + ")\n");
-
-            showStock();
-
-            notifyAll();
-            return true;
         }
 
         void showStock() {
@@ -165,7 +166,6 @@ public class Main extends Application {
 
             if (stock.isEmpty()) {
                 printText("Склад пуст.\n");
-
             } else if (stock.size() == D) {
                 printText("Склад полон.\n");
             }
@@ -173,13 +173,12 @@ public class Main extends Application {
             printText("\n");
         }
 
-         int size() {
+        int size() {
             return stock.size();
         }
     }
 
     class Producer extends Thread {
-
         Random random = new Random();
 
         Producer(String name) {
@@ -192,27 +191,37 @@ public class Main extends Application {
                 char first = VOWELS[random.nextInt(VOWELS.length)];
                 char second = VOWELS[random.nextInt(VOWELS.length)];
 
-                if (!store.put(getName(), first, second)) {
+                StoreResult result;
+                do {
+                    result = store.put(getName(), first, second);
+                } while (result == StoreResult.RETRY);
+
+                if (result == StoreResult.STOP) {
                     break;
                 }
             }
+
             printText(getName() + " завершил работу.\n");
         }
     }
 
     class Consumer extends Thread {
-
         Consumer(String name) {
             super(name);
         }
-
         @Override
         public void run() {
             for (int i = 1; i <= Z; i++) {
-                if (!store.get(getName(), i)) {
+                StoreResult result;
+                do {
+                    result = store.get(getName(), i);
+                } while (result == StoreResult.RETRY);
+
+                if (result == StoreResult.STOP) {
                     return;
                 }
             }
+
             printText(getName() + " получил все " + Z + " буквы и завершил работу.\n");
         }
     }
@@ -234,7 +243,6 @@ public class Main extends Application {
                 consumers[i].interrupt();
             }
         }
-
     }
 
     public static void main(String[] args) {

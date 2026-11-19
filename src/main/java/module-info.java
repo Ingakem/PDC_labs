@@ -5,4 +5,5 @@ module com.example.lab4 {
 
     opens com.example.lab4 to javafx.fxml;
     exports com.example.lab4;
+    exports com.example.lab1;
 }
